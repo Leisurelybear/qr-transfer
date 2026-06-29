@@ -29,12 +29,24 @@ export default function QRScanner({ onScanned }: QRScannerProps) {
         onScanned(decodedText)
       },
       () => { /* ignore decode failures */ },
-    )
+    ).catch((err: Error) => {
+      console.error('QR Scanner failed to start:', err)
+      if (containerRef.current) {
+        containerRef.current.innerHTML = `
+          <div class="p-4 bg-red-900/50 rounded-lg text-center">
+            <p class="text-red-300 mb-2">Camera access failed</p>
+            <p class="text-sm text-red-400">
+              Make sure you're using HTTPS or localhost,
+              and have granted camera permissions.
+            </p>
+          </div>`
+      }
+    })
 
     return () => {
       scannerRef.current?.stop().catch(() => {})
     }
-  }, [])
+  }, [onScanned])
 
   return (
     <div>

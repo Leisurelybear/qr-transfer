@@ -56,7 +56,7 @@ export default function ReceivePage() {
   }, [sessionActive, sessionId])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">QR Transfer - Receive</h1>
       <QRScanner onScanned={handleQRScanned} />
       {sessionActive && (

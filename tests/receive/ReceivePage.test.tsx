@@ -4,7 +4,7 @@ import ReceivePage from '../../src/receive/ReceivePage'
 
 vi.mock('html5-qrcode', () => ({
   Html5Qrcode: vi.fn().mockImplementation(() => ({
-    start: vi.fn(),
+    start: vi.fn().mockReturnValue(Promise.resolve()),
     stop: vi.fn().mockResolvedValue(undefined),
   })),
 }))
