@@ -44,7 +44,7 @@ export default function ReceivePage() {
           const merged = mergeChunks(updated)
           if (merged) {
             const decompressed = decompress(merged)
-            const blob = new Blob([decompressed])
+            const blob = new Blob([decompressed as unknown as BlobPart])
             const url = URL.createObjectURL(blob)
             setDownloadUrl(url)
             setFileName(packet.originalFilename || 'download')

@@ -1,7 +1,5 @@
 import type { DataPacket } from '../shared/protocol'
 
-const MAX_PAYLOAD_SIZE = 2048
-
 export function chunkFile(
   data: Uint8Array,
   sessionId: string,

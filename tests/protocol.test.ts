@@ -37,8 +37,8 @@ describe('protocol serialization', () => {
     const parsed = parsePacket(serialized)
     expect(parsed).not.toBeNull()
     expect(parsed!.sessionId).toBe('test-session-1')
-    expect(parsed!.chunkIndex).toBe(0)
-    expect(parsed!.totalChunks).toBe(5)
+    expect((parsed as DataPacket).chunkIndex).toBe(0)
+    expect((parsed as DataPacket).totalChunks).toBe(5)
   })
 
   test('serializes a control packet', () => {
