@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import QRScanner from './QRScanner'
 import TransferProgress from './TransferProgress'
 import { parsePacket } from '../shared/protocol'
@@ -9,9 +9,12 @@ import type { DataPacket } from '../shared/protocol'
 export default function ReceivePage() {
   const [packets, setPackets] = useState<DataPacket[]>([])
   const [sessionActive, setSessionActive] = useState(false)
-  const [sessionId, setSessionId] = useState('')
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [fileName, setFileName] = useState('')
+
+  const sessionIdRef = useRef('')
+  const sessionActiveRef = useRef(false)
+  const packetsRef = useRef<DataPacket[]>([])
 
   const handleQRScanned = useCallback((rawData: string) => {
     const packet = parsePacket(rawData)
@@ -19,41 +22,43 @@ export default function ReceivePage() {
 
     if (packet.type === 'control') {
       if (packet.ctrlMsg === 'done' && packet.sessionId) {
+        sessionActiveRef.current = false
         setSessionActive(false)
       }
       return
     }
 
     if (packet.type === 'data') {
-      if (!sessionActive) {
-        setSessionId(packet.sessionId)
+      if (!sessionActiveRef.current) {
+        sessionIdRef.current = packet.sessionId
+        sessionActiveRef.current = true
+        packetsRef.current = []
         setSessionActive(true)
         setPackets([])
         setDownloadUrl(null)
       }
 
-      if (packet.sessionId !== sessionId) return
+      if (packet.sessionId !== sessionIdRef.current) return
 
-      setPackets(prev => {
-        const existing = prev.find(p => p.chunkIndex === packet.chunkIndex)
-        if (existing) return prev
+      const existing = packetsRef.current.find(p => p.chunkIndex === packet.chunkIndex)
+      if (existing) return
 
-        const updated = [...prev, packet]
-        if (updated.length === packet.totalChunks) {
-          // All chunks received, assemble
-          const merged = mergeChunks(updated)
-          if (merged) {
-            const decompressed = decompress(merged)
-            const blob = new Blob([decompressed as unknown as BlobPart])
-            const url = URL.createObjectURL(blob)
-            setDownloadUrl(url)
-            setFileName(packet.originalFilename || 'download')
-          }
+      const updated = [...packetsRef.current, packet]
+      packetsRef.current = updated
+      setPackets(updated)
+
+      if (updated.length === packet.totalChunks) {
+        const merged = mergeChunks(updated)
+        if (merged) {
+          const decompressed = decompress(merged)
+          const blob = new Blob([decompressed.buffer as ArrayBuffer])
+          const url = URL.createObjectURL(blob)
+          setDownloadUrl(url)
+          setFileName(packet.originalFilename || 'download')
         }
-        return updated
-      })
+      }
     }
-  }, [sessionActive, sessionId])
+  }, [])
 
   return (
     <div className="p-4">

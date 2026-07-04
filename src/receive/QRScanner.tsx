@@ -8,6 +8,11 @@ interface QRScannerProps {
 export default function QRScanner({ onScanned }: QRScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const onScannedRef = useRef(onScanned)
+
+  useEffect(() => {
+    onScannedRef.current = onScanned
+  })
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -16,19 +21,17 @@ export default function QRScanner({ onScanned }: QRScannerProps) {
       verbose: false,
     })
 
-    const config = {
-      fps: 10,
-      qrbox: { width: 400, height: 400 },
-      aspectRatio: 1.0,
-    }
-
     scannerRef.current.start(
       { facingMode: 'environment' },
-      config,
-      (decodedText: string) => {
-        onScanned(decodedText)
+      {
+        fps: 10,
+        qrbox: { width: 400, height: 400 },
+        aspectRatio: 1.0,
       },
-      () => { /* ignore decode failures */ },
+      (decodedText: string) => {
+        onScannedRef.current(decodedText)
+      },
+      () => {},
     ).catch((err: Error) => {
       console.error('QR Scanner failed to start:', err)
       if (containerRef.current) {
@@ -46,7 +49,7 @@ export default function QRScanner({ onScanned }: QRScannerProps) {
     return () => {
       scannerRef.current?.stop().catch(() => {})
     }
-  }, [onScanned])
+  }, [])
 
   return (
     <div>
