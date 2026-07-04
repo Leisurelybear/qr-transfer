@@ -16,6 +16,7 @@ if (process.env.HTTPS !== 'false') {
 
 export default defineConfig({
   plugins: [react()],
+  base: '/qr-transfer/',
   server: {
     host: '0.0.0.0',
     https: httpsConfig,
