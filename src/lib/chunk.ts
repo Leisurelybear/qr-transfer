@@ -4,6 +4,8 @@ export function chunkFile(
   data: Uint8Array,
   sessionId: string,
   totalChunks: number,
+  originalFilename = '',
+  originalSize = data.length,
 ): DataPacket[] {
   const chunks: DataPacket[] = []
   const chunkSize = Math.ceil(data.length / totalChunks)
@@ -20,8 +22,8 @@ export function chunkFile(
       sessionId,
       chunkIndex: i,
       totalChunks,
-      originalFilename: '',
-      originalSize: data.length,
+      originalFilename,
+      originalSize,
       compressedSize: slice.length,
       checksum: '',
       payload,

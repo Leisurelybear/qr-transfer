@@ -12,9 +12,9 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024 // 50 MB
 
 export default function SendPage() {
   const [frames, setFrames] = useState<DataPacket[]>([])
-  const [playing, setPlaying] = useState(false)
   const [sessionId, setSessionId] = useState('')
   const [qrUrls, setQrUrls] = useState<string[]>([])
+  const [fileName, setFileName] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -60,8 +60,9 @@ export default function SendPage() {
         const chunkSize = 1500
         const estimatedChunks = Math.max(1, Math.ceil(compressed.length / chunkSize))
 
-        const packets = chunkFile(compressed, sid, estimatedChunks)
+        const packets = chunkFile(compressed, sid, estimatedChunks, file.name, file.size)
         setFrames(packets)
+        setFileName(file.name)
       } catch {
         setError('Failed to process file')
       }
@@ -84,9 +85,9 @@ export default function SendPage() {
       {frames.length > 0 && (
         <QRDisplay
           packets={frames}
-          playing={playing}
-          onTogglePlay={() => setPlaying(!playing)}
+          qrUrls={qrUrls}
           sessionId={sessionId}
+          fileName={fileName}
         />
       )}
       {qrUrls.length > 0 && <GifGenerator qrUrls={qrUrls} fps={6} />}
